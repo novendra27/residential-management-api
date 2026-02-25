@@ -13,6 +13,7 @@ return new class extends Migration
             $table->uuid('user_id');
             $table->string('token', 255)->unique();
             $table->dateTime('expired_at')->nullable();
+            $table->dateTime('logged_out_at')->nullable();
             $table->dateTime('created_at')->useCurrent();
 
             $table->foreign('user_id')

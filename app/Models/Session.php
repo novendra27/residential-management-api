@@ -15,12 +15,14 @@ class Session extends Model
         'user_id',
         'token',
         'expired_at',
+        'logged_out_at',
         'created_at',
     ];
 
     protected $casts = [
-        'expired_at' => 'datetime',
-        'created_at' => 'datetime',
+        'expired_at'    => 'datetime',
+        'logged_out_at' => 'datetime',
+        'created_at'    => 'datetime',
     ];
 
     public function user()

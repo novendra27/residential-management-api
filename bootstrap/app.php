@@ -11,7 +11,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'auth.token' => \App\Http\Middleware\AuthenticateToken::class,
+        ]);
+
+        // Semua route adalah REST API, tidak memerlukan CSRF token
+        $middleware->validateCsrfTokens(except: ['*']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
