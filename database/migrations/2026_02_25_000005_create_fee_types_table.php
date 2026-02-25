@@ -8,17 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('fee_types', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('user_name', 100)->unique();
-            $table->string('email')->unique();
-            $table->string('password');
+            $table->string('fee_name', 100);
+            $table->decimal('default_amount', 15, 0)->default(0);
             $table->dateTime('created_at')->useCurrent();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('fee_types');
     }
 };
