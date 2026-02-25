@@ -36,11 +36,12 @@ Route::middleware('auth.token')->group(function () {
     Route::delete('/houses/{id}',                  [HouseController::class, 'destroy']);
 
     // Bills
-    Route::get('/bills',            [BillController::class, 'index']);
-    Route::get('/bills/{id}',       [BillController::class, 'show']);
-    Route::post('/bills',           [BillController::class, 'store']);
-    Route::put('/bills/{id}',       [BillController::class, 'update']);
-    Route::patch('/bills/{id}/pay', [BillController::class, 'pay']);
+    Route::get('/bills',              [BillController::class, 'index']);
+    Route::get('/bills/{id}',         [BillController::class, 'show']);
+    Route::post('/bills',             [BillController::class, 'store']);
+    Route::put('/bills/{id}',         [BillController::class, 'update']);
+    Route::delete('/bills/{id}',      [BillController::class, 'destroy']);
+    Route::patch('/bills/{id}/pay',   [BillController::class, 'pay']);
 
     // Payments
     Route::post('/payments', [PaymentController::class, 'store']);
