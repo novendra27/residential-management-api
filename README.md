@@ -1,59 +1,337 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Residential Management System – Backend API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistem administrasi keuangan dan penghuni perumahan yang dikelola oleh RT. Mencakup pengelolaan penghuni, rumah, tagihan iuran bulanan, pengeluaran, dan laporan keuangan.
 
-## About Laravel
+**Stack:** Laravel 11 · PHP 8.2 · MySQL · Token-based Auth (custom sessions table)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Daftar Isi
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- [Persyaratan](#persyaratan)
+- [Instalasi](#instalasi)
+- [Konfigurasi](#konfigurasi)
+- [Menjalankan Aplikasi](#menjalankan-aplikasi)
+- [Struktur Folder](#struktur-folder)
+- [Autentikasi](#autentikasi)
+- [Format Response](#format-response)
+- [API Endpoints](#api-endpoints)
+- [Error Codes](#error-codes)
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Persyaratan
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- PHP >= 8.2 (dengan ekstensi: `pdo_mysql`, `fileinfo`, `gd`)
+- Composer >= 2
+- MySQL >= 8.0
+- Node.js >= 18 (opsional, untuk build aset)
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Instalasi
 
-### Premium Partners
+### 1. Clone repositori
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+git clone <repository-url> residential-management
+cd residential-management
+```
 
-## Contributing
+### 2. Install dependensi PHP
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+composer install
+```
 
-## Code of Conduct
+### 3. Salin file environment
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+cp .env.example .env
+```
 
-## Security Vulnerabilities
+### 4. Generate application key
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+php artisan key:generate
+```
 
-## License
+### 5. Konfigurasi database
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Edit file `.env`, sesuaikan bagian berikut:
+
+```env
+APP_URL=http://127.0.0.1:8000
+APP_TIMEZONE=Asia/Jakarta
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=residential_management
+DB_USERNAME=root
+DB_PASSWORD=
+
+SESSION_DRIVER=file
+```
+
+> `APP_URL` wajib disesuaikan dengan URL server Anda — digunakan untuk membangun URL publik foto KTP penghuni.
+
+### 6. Jalankan migrasi dan seeder
+
+```bash
+php artisan migrate --seed
+```
+
+Perintah ini akan membuat seluruh tabel dan mengisi data awal:
+- 2 jenis iuran (Satpam Rp100.000, Kebersihan Rp15.000)
+- 1 akun admin (`admin@rt.com` / `password123`)
+- 20 rumah (blok A–D)
+- 19 penghuni beserta riwayat hunian
+- Data tagihan, pembayaran, dan pengeluaran contoh
+
+### 7. Buat symbolic link storage
+
+```bash
+php artisan storage:link
+```
+
+Diperlukan agar foto KTP dapat diakses via URL publik.
+
+---
+
+## Konfigurasi
+
+### Environment penting
+
+| Key | Nilai yang disarankan | Keterangan |
+|-----|-----------------------|------------|
+| `APP_URL` | `http://localhost` | Digunakan untuk membangun URL foto KTP |
+| `APP_DEBUG` | `false` (production) | `true` = tampilkan detail error; `false` = pesan generik |
+| `APP_TIMEZONE` | `Asia/Jakarta` | Zona waktu semua timestamp |
+| `SESSION_DRIVER` | `file` | **Wajib `file`** — jangan `database`, karena tabel `sessions` dipakai untuk auth custom |
+
+---
+
+## Menjalankan Aplikasi
+
+### Development
+
+```bash
+php artisan serve
+```
+
+API siap diakses di `http://127.0.0.1:8000`.
+
+### Verifikasi instalasi
+
+Setelah server berjalan, pastikan API aktif dengan mencoba login menggunakan akun yang sudah di-seed:
+
+```bash
+curl -X POST http://127.0.0.1:8000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@rt.com","password":"password123"}'
+```
+
+Jika berhasil, response akan mengembalikan `token` yang dapat digunakan untuk mengakses endpoint lainnya.
+
+### Production (shared hosting / server)
+
+Arahkan document root web server ke folder `public/`.
+
+---
+
+## Struktur Folder
+
+```
+app/
+├── Http/
+│   ├── Controllers/        # Menerima request, memanggil Service, mengembalikan response JSON
+│   │   ├── AuthController.php
+│   │   ├── ResidentController.php
+│   │   ├── HouseController.php
+│   │   ├── BillController.php
+│   │   ├── PaymentController.php
+│   │   ├── ExpenseController.php
+│   │   └── ReportController.php
+│   ├── Middleware/
+│   │   └── AuthTokenMiddleware.php  # Validasi Bearer token di setiap request
+│   └── Requests/           # Form Request — validasi input & pesan error terstruktur
+│       ├── StoreBillRequest.php
+│       ├── UpdateBillRequest.php
+│       ├── PayBillRequest.php
+│       ├── StorePaymentRequest.php
+│       ├── StoreExpenseRequest.php
+│       └── UpdateExpenseRequest.php
+├── Models/                 # Eloquent models dengan UUID, fillable, casts, relasi
+│   ├── User.php
+│   ├── Session.php         # Custom sessions untuk token auth (bukan Laravel session)
+│   ├── House.php
+│   ├── Resident.php
+│   ├── ResidentHouseHistory.php
+│   ├── FeeType.php
+│   ├── Bill.php
+│   ├── Payment.php
+│   ├── Expense.php
+│   └── MonthlyBalance.php
+├── Services/               # Business logic — dipanggil oleh Controller
+│   ├── AuthService.php
+│   ├── ResidentService.php
+│   ├── HouseService.php
+│   ├── BillService.php
+│   ├── PaymentService.php
+│   ├── ExpenseService.php
+│   └── ReportService.php
+└── Providers/
+    └── AppServiceProvider.php
+
+bootstrap/
+└── app.php                 # Konfigurasi middleware, alias, dan global exception handler
+
+config/
+├── cors.php                # CORS: semua origin diizinkan (paths = ['*'])
+└── ...                     # Konfigurasi Laravel standar lainnya
+
+database/
+├── migrations/             # Skrip pembuatan tabel
+├── seeders/                # Data awal (FeeType, User, House, Resident, dll)
+└── factories/
+
+routes/
+└── web.php                 # Seluruh 22 endpoint API didefinisikan di sini
+
+storage/
+└── app/public/ktp/         # Foto KTP penghuni tersimpan di sini
+```
+
+### Pola arsitektur
+
+Proyek ini menggunakan **Service Layer Pattern**:
+
+```
+Request → Controller → Service → Model (Eloquent) → Database
+                ↓
+         JSON Response
+```
+
+- **Controller** hanya bertanggung jawab menerima request dan mengembalikan response.
+- **Service** menampung seluruh business logic (validasi domain, kalkulasi, query kompleks).
+- **Model** hanya mendefinisikan struktur data, relasi, dan casting.
+
+---
+
+## Autentikasi
+
+Semua endpoint **kecuali** `POST /auth/login` memerlukan token di header:
+
+```
+Authorization: Bearer <token>
+```
+
+Token diperoleh dari response `POST /auth/login` dan berlaku selama **7 hari**.
+
+---
+
+## Format Response
+
+### Sukses
+
+```json
+{
+  "success": true,
+  "message": "Deskripsi singkat",
+  "data": {}
+}
+```
+
+### Sukses dengan pagination
+
+```json
+{
+  "success": true,
+  "message": "...",
+  "data": [],
+  "meta": {
+    "current_page": 1,
+    "per_page": 15,
+    "total": 100,
+    "last_page": 7
+  }
+}
+```
+
+### Error validasi (422)
+
+```json
+{
+  "success": false,
+  "message": "Validation failed",
+  "errors": {
+    "field_name": ["Pesan error"]
+  }
+}
+```
+
+### Error umum
+
+```json
+{
+  "success": false,
+  "message": "Deskripsi error yang informatif"
+}
+```
+
+---
+
+## API Endpoints
+
+Dokumentasi lengkap seluruh endpoint — mencakup request body, contoh response, dan seluruh kemungkinan error — tersedia di:
+
+**[→ endpoint.md](endpoint.md)**
+
+### Ringkasan endpoint
+
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| POST | `/auth/login` | Login, dapatkan token |
+| GET | `/auth/me` | Data user aktif |
+| POST | `/auth/logout` | Invalidate token |
+| GET | `/residents` | List penghuni |
+| GET | `/residents/{id}` | Detail penghuni |
+| POST | `/residents` | Tambah penghuni |
+| PUT | `/residents/{id}` | Update penghuni |
+| DELETE | `/residents/{id}` | Hapus penghuni |
+| GET | `/houses` | List rumah |
+| GET | `/houses/{id}` | Detail rumah + penghuni aktif |
+| GET | `/houses/{id}/resident_histories` | Riwayat penghuni di rumah |
+| GET | `/houses/{id}/payment_histories` | Riwayat tagihan di rumah |
+| POST | `/houses` | Tambah rumah |
+| PUT | `/houses/{id}` | Update rumah |
+| DELETE | `/houses/{id}` | Hapus rumah |
+| GET | `/bills` | List tagihan (filterable) |
+| GET | `/bills/{id}` | Detail tagihan |
+| POST | `/bills` | Buat tagihan baru |
+| PUT | `/bills/{id}` | Update tagihan |
+| PATCH | `/bills/{id}/pay` | Bayar tagihan |
+| DELETE | `/bills/{id}` | Hapus tagihan |
+| POST | `/payments` | Catat pembayaran |
+| GET | `/expenses` | List pengeluaran (filterable) |
+| GET | `/expenses/{id}` | Detail pengeluaran |
+| POST | `/expenses` | Tambah pengeluaran |
+| PUT | `/expenses/{id}` | Update pengeluaran |
+| DELETE | `/expenses/{id}` | Hapus pengeluaran |
+| GET | `/report/summary` | Rekap keuangan 12 bulan |
+| GET | `/report/balances` | Detail keuangan bulanan |
+
+---
+
+## Error Codes
+
+| HTTP Code | Kondisi |
+|-----------|---------|
+| `200` | Sukses |
+| `201` | Resource berhasil dibuat |
+| `401` | Token tidak ada, tidak valid, sudah expired, atau sudah logout |
+| `404` | Endpoint tidak ditemukan, atau resource tidak ditemukan |
+| `405` | HTTP method tidak diizinkan untuk endpoint tersebut |
+| `422` | Validasi gagal, atau business rule dilanggar (duplikat, resource masih dipakai, dll) |
+| `500` | Server error tak terduga |
