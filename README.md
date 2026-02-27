@@ -149,6 +149,7 @@ app/
 │   │   ├── AuthController.php
 │   │   ├── ResidentController.php
 │   │   ├── HouseController.php
+│   │   ├── ResidentHouseHistoryController.php
 │   │   ├── BillController.php
 │   │   ├── PaymentController.php
 │   │   ├── ExpenseController.php
@@ -156,6 +157,9 @@ app/
 │   ├── Middleware/
 │   │   └── AuthTokenMiddleware.php  # Validasi Bearer token di setiap request
 │   └── Requests/           # Form Request — validasi input & pesan error terstruktur
+│       ├── AssignResidentRequest.php
+│       ├── UpdateResidentHistoryRequest.php
+│       ├── UnassignResidentRequest.php
 │       ├── StoreBillRequest.php
 │       ├── UpdateBillRequest.php
 │       ├── PayBillRequest.php
@@ -177,6 +181,7 @@ app/
 │   ├── AuthService.php
 │   ├── ResidentService.php
 │   ├── HouseService.php
+│   ├── ResidentHouseHistoryService.php
 │   ├── BillService.php
 │   ├── PaymentService.php
 │   ├── ExpenseService.php
@@ -197,7 +202,7 @@ database/
 └── factories/
 
 routes/
-└── web.php                 # Seluruh 22 endpoint API didefinisikan di sini
+└── web.php                 # Seluruh 25 endpoint API didefinisikan di sini
 
 storage/
 └── app/public/ktp/         # Foto KTP penghuni tersimpan di sini
@@ -307,6 +312,9 @@ Dokumentasi lengkap seluruh endpoint — mencakup request body, contoh response,
 | POST | `/houses` | Tambah rumah |
 | PUT | `/houses/{id}` | Update rumah |
 | DELETE | `/houses/{id}` | Hapus rumah |
+| POST | `/houses/{id}/assign` | Tambah / tugaskan penghuni ke rumah |
+| PUT | `/houses/{id}/assign` | Perbarui data hunian aktif (resident / move_in_date) |
+| DELETE | `/houses/{id}/assign` | Keluarkan penghuni aktif dari rumah |
 | GET | `/bills` | List tagihan (filterable) |
 | GET | `/bills/{id}` | Detail tagihan |
 | POST | `/bills` | Buat tagihan baru |

@@ -7,6 +7,7 @@ use App\Http\Controllers\HouseController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ResidentController;
+use App\Http\Controllers\ResidentHouseHistoryController;
 use Illuminate\Support\Facades\Route;
 
 // ─── Public ───────────────────────────────────────────────────────────────────
@@ -34,6 +35,11 @@ Route::middleware('auth.token')->group(function () {
     Route::post('/houses',                         [HouseController::class, 'store']);
     Route::put('/houses/{id}',                     [HouseController::class, 'update']);
     Route::delete('/houses/{id}',                  [HouseController::class, 'destroy']);
+
+    // House resident assignment
+    Route::post('/houses/{id}/assign',   [ResidentHouseHistoryController::class, 'assign']);
+    Route::put('/houses/{id}/assign',    [ResidentHouseHistoryController::class, 'updateAssignment']);
+    Route::delete('/houses/{id}/assign', [ResidentHouseHistoryController::class, 'unassign']);
 
     // Bills
     Route::get('/bills',              [BillController::class, 'index']);

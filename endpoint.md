@@ -33,6 +33,9 @@ Authorization: Bearer <token>
    - [POST /houses](#post-houses)
    - [PUT /houses/{id}](#put-housesid)
    - [DELETE /houses/{id}](#delete-housesid)
+   - [POST /houses/{id}/assign](#post-housesidassign)
+   - [PUT /houses/{id}/assign](#put-housesidassign)
+   - [DELETE /houses/{id}/assign](#delete-housesidassign)
 4. [Bills](#4-bills)
    - [GET /bills](#get-bills)
    - [GET /bills/{id}](#get-billsid)
@@ -608,6 +611,146 @@ Authorization: Bearer <token>
 | 404 | `id` tidak ditemukan | `"House not found."` |
 | 422 | Rumah masih dihuni (`is_occupied = true`) | `"Rumah masih dihuni dan tidak dapat dihapus."` |
 | 422 | Rumah memiliki riwayat tagihan | `"Rumah memiliki riwayat tagihan dan tidak dapat dihapus."` |
+
+---
+
+### `POST /houses/{id}/assign`
+
+**Kegunaan:** Menugaskan seorang penghuni ke rumah (penghuni masuk / move-in). Endpoint ini akan gagal jika rumah sudah berstatus dihuni. Setelah berhasil, status `is_occupied` rumah otomatis diubah menjadi `true`.
+
+**Request Body (JSON):**
+```json
+{
+  "resident_id": "019c93e6-fab8-7369-9f25-7690b08809ca",
+  "move_in_date": "2026-02-01"
+}
+```
+
+| Field | Type | Required | Keterangan |
+|-------|------|----------|------------|
+| `resident_id` | uuid | ✅ | UUID penghuni yang akan ditugaskan |
+| `move_in_date` | date | ✅ | Tanggal masuk (format `YYYY-MM-DD`) |
+
+**Response 201 – Sukses:**
+```json
+{
+  "success": true,
+  "message": "Resident assigned to house successfully.",
+  "data": {
+    "id": "019c9e1a-f584-72dc-acd0-a01a49987f1f",
+    "move_in_date": "2026-02-01",
+    "move_out_date": null,
+    "is_active": true,
+    "created_at": "2026-02-27 14:58:12",
+    "resident": {
+      "id": "019c93e6-fab8-7369-9f25-7690b08809ca",
+      "full_name": "Joko Widodo",
+      "phone_number": "081234567818",
+      "is_contract": false,
+      "is_married": true
+    },
+    "house": {
+      "id": "019c93e6-fa6e-7246-92cd-c0587611c4a2",
+      "house_number": "B5",
+      "address": "Jl. Melati Blok B No. 5"
+    }
+  }
+}
+```
+
+**Error:**
+
+| HTTP | Kondisi | `message` |
+|------|---------|-----------|
+| 401 | Token tidak valid | *(standar)* |
+| 404 | `id` rumah tidak ditemukan | `"House not found."` |
+| 404 | `resident_id` tidak ditemukan | `"Resident not found."` |
+| 422 | Field wajib kosong / format salah | `"Validation failed"` + `errors` |
+| 422 | Rumah sudah dihuni | `"Rumah sudah dihuni. Keluarkan penghuni aktif terlebih dahulu sebelum menambahkan penghuni baru."` |
+
+---
+
+### `PUT /houses/{id}/assign`
+
+**Kegunaan:** Memperbarui data hunian aktif pada sebuah rumah — bisa mengubah `move_in_date` dan/atau mengganti `resident_id`. Semua field bersifat opsional, kirim hanya yang ingin diubah. Endpoint ini akan gagal jika tidak ada penghuni aktif di rumah tersebut.
+
+> Seorang penghuni **boleh** aktif di lebih dari satu rumah secara bersamaan.
+
+**Request Body (JSON):**
+```json
+{
+  "resident_id": "019c93e6-faba-738c-8e9d-79b816f9bbc3",
+  "move_in_date": "2026-02-10"
+}
+```
+
+| Field | Type | Required | Keterangan |
+|-------|------|----------|------------|
+| `resident_id` | uuid | ❌ | Ganti ke penghuni lain |
+| `move_in_date` | date | ❌ | Koreksi tanggal masuk |
+
+**Response 200 – Sukses:** Data history hunian yang diperbarui (format sama dengan POST).
+
+**Error:**
+
+| HTTP | Kondisi | `message` |
+|------|---------|-----------|
+| 401 | Token tidak valid | *(standar)* |
+| 404 | `id` rumah tidak ditemukan | `"House not found."` |
+| 422 | Nilai field tidak valid | `"Validation failed"` + `errors` |
+| 422 | Tidak ada penghuni aktif di rumah ini | `"Tidak ada penghuni aktif di rumah ini yang dapat diperbarui."` |
+
+---
+
+### `DELETE /houses/{id}/assign`
+
+**Kegunaan:** Mencabut penghuni aktif dari sebuah rumah (penghuni keluar / move-out). `move_out_date` bersifat opsional — jika tidak dikirim, default ke tanggal hari ini. Setelah berhasil, status `is_occupied` rumah otomatis diubah menjadi `false`.
+
+**Request Body (JSON, opsional):**
+```json
+{
+  "move_out_date": "2026-02-27"
+}
+```
+
+| Field | Type | Required | Keterangan |
+|-------|------|----------|------------|
+| `move_out_date` | date | ❌ | Tanggal keluar. Default: hari ini |
+
+**Response 200 – Sukses:**
+```json
+{
+  "success": true,
+  "message": "Resident unassigned from house successfully.",
+  "data": {
+    "id": "019c9e1a-f584-72dc-acd0-a01a49987f1f",
+    "move_in_date": "2026-02-10",
+    "move_out_date": "2026-02-27",
+    "is_active": false,
+    "created_at": "2026-02-27 14:58:12",
+    "resident": {
+      "id": "019c93e6-faba-738c-8e9d-79b816f9bbc3",
+      "full_name": "Sri Mulyani",
+      "phone_number": "081234567819",
+      "is_contract": true,
+      "is_married": false
+    },
+    "house": {
+      "id": "019c93e6-fa6e-7246-92cd-c0587611c4a2",
+      "house_number": "B5",
+      "address": "Jl. Melati Blok B No. 5"
+    }
+  }
+}
+```
+
+**Error:**
+
+| HTTP | Kondisi | `message` |
+|------|---------|-----------|
+| 401 | Token tidak valid | *(standar)* |
+| 404 | `id` rumah tidak ditemukan | `"House not found."` |
+| 422 | Tidak ada penghuni aktif di rumah ini | `"Tidak ada penghuni aktif di rumah ini."` |
 
 ---
 
